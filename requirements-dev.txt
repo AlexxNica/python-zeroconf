@@ -12,4 +12,3 @@ netifaces
 nose
 pep8==1.5.7
 pep8-naming
-six

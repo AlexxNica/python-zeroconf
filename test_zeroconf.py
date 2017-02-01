@@ -11,9 +11,6 @@ import time
 import unittest
 from threading import Event
 
-from six import indexbytes
-from six.moves import xrange
-
 import zeroconf as r
 from zeroconf import (
     DNSHinfo,
@@ -145,19 +142,19 @@ class PacketForm(unittest.TestCase):
         """ID must be zero in a DNS-SD packet"""
         generated = r.DNSOutgoing(r._FLAGS_QR_QUERY)
         bytes = generated.packet()
-        id = indexbytes(bytes, 0) << 8 | indexbytes(bytes, 1)
+        id = bytes[0] << 8 | bytes[1]
         self.assertEqual(id, 0)
 
     def test_query_header_bits(self):
         generated = r.DNSOutgoing(r._FLAGS_QR_QUERY)
         bytes = generated.packet()
-        flags = indexbytes(bytes, 2) << 8 | indexbytes(bytes, 3)
+        flags = bytes[2] << 8 | bytes[3]
         self.assertEqual(flags, 0x0)
 
     def test_response_header_bits(self):
         generated = r.DNSOutgoing(r._FLAGS_QR_RESPONSE)
         bytes = generated.packet()
-        flags = indexbytes(bytes, 2) << 8 | indexbytes(bytes, 3)
+        flags = bytes[2] << 8 | bytes[3]
         self.assertEqual(flags, 0x8000)
 
     def test_numbers(self):
@@ -173,7 +170,7 @@ class PacketForm(unittest.TestCase):
     def test_numbers_questions(self):
         generated = r.DNSOutgoing(r._FLAGS_QR_RESPONSE)
         question = r.DNSQuestion("testname.local.", r._TYPE_SRV, r._CLASS_IN)
-        for i in xrange(10):
+        for i in range(10):
             generated.add_question(question)
         bytes = generated.packet()
         (numQuestions, numAnswers, numAuthorities,

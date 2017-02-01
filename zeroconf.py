@@ -1,6 +1,3 @@
-from __future__ import (
-    absolute_import, division, print_function, unicode_literals)
-
 """ Multicast DNS Service Discovery for Python, v0.14-wmcbrine
     Copyright 2003 Paul Scott-Murphy, 2014 William McBrine
 
@@ -36,8 +33,6 @@ import time
 from functools import reduce
 
 import netifaces
-from six import binary_type, indexbytes, int2byte, iteritems, text_type
-from six.moves import xrange
 
 __author__ = 'Paul Scott-Murphy, William McBrine'
 __maintainer__ = 'Jakub Stasiak <jakub@stasiak.at>'
@@ -150,6 +145,9 @@ _TYPES = {_TYPE_A: "a",
 _HAS_A_TO_Z = re.compile(r'[A-Za-z]')
 _HAS_ONLY_A_TO_Z_NUM_HYPHEN = re.compile(r'^[A-Za-z0-9\-]+$')
 _HAS_ASCII_CONTROL_CHARS = re.compile(r'[\x00-\x1f\x7f]')
+
+
+int2byte = struct.Struct("B").pack
 
 
 @enum.unique
@@ -638,7 +636,7 @@ class DNSIncoming(QuietLogger):
 
     def read_questions(self):
         """Reads questions section of packet"""
-        for i in xrange(self.num_questions):
+        for i in range(self.num_questions):
             name = self.read_name()
             type_, class_ = self.unpack(b'!HH')
 
@@ -651,7 +649,7 @@ class DNSIncoming(QuietLogger):
 
     def read_character_string(self):
         """Reads a character string from the packet"""
-        length = indexbytes(self.data, self.offset)
+        length = self.data[self.offset]
         self.offset += 1
         return self.read_string(length)
 
@@ -669,7 +667,7 @@ class DNSIncoming(QuietLogger):
         """Reads the answers, authorities and additionals section of the
         packet"""
         n = self.num_answers + self.num_authorities + self.num_additionals
-        for i in xrange(n):
+        for i in range(n):
             domain = self.read_name()
             type_, class_, ttl, length = self.unpack(b'!HHiH')
 
@@ -714,7 +712,7 @@ class DNSIncoming(QuietLogger):
 
     def read_utf(self, offset, length):
         """Reads a UTF-8 string of a given length from the packet"""
-        return text_type(self.data[offset:offset + length], 'utf-8', 'replace')
+        return str(self.data[offset:offset + length], 'utf-8', 'replace')
 
     def read_name(self):
         """Reads a domain name from the packet"""
@@ -724,7 +722,7 @@ class DNSIncoming(QuietLogger):
         first = off
 
         while True:
-            length = indexbytes(self.data, off)
+            length = self.data[off]
             off += 1
             if length == 0:
                 break
@@ -735,7 +733,7 @@ class DNSIncoming(QuietLogger):
             elif t == 0xC0:
                 if next_ < 0:
                     next_ = off + 1
-                off = ((length & 0x3F) << 8) | indexbytes(self.data, off)
+                off = ((length & 0x3F) << 8) | self.data[off]
                 if off >= first:
                     raise IncomingDecodeError(
                         "Bad domain name (circular) at %s" % (off,))
@@ -1377,15 +1375,15 @@ class ServiceInfo(object):
             self._properties = properties
             list_ = []
             result = b''
-            for key, value in iteritems(properties):
-                if isinstance(key, text_type):
+            for key, value in properties.items():
+                if isinstance(key, str):
                     key = key.encode('utf-8')
 
                 if value is None:
                     suffix = b''
-                elif isinstance(value, text_type):
+                elif isinstance(value, str):
                     suffix = value.encode('utf-8')
-                elif isinstance(value, binary_type):
+                elif isinstance(value, bytes):
                     suffix = value
                 elif isinstance(value, int):
                     if value:
@@ -1409,7 +1407,7 @@ class ServiceInfo(object):
         index = 0
         strs = []
         while index < end:
-            length = indexbytes(text, index)
+            length = text[index]
             index += 1
             strs.append(text[index:index + length])
             index += length
@@ -1617,8 +1615,7 @@ def new_socket():
     else:
         try:
             s.setsockopt(socket.SOL_SOCKET, reuseport, 1)
-        except (OSError, socket.error) as err:
-            # OSError on python 3, socket.error on python 2
+        except OSError as err:
             if not err.errno == errno.ENOPROTOOPT:
                 raise
 

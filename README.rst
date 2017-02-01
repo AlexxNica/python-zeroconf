@@ -43,8 +43,7 @@ Compared to some other Zeroconf/Bonjour/Avahi Python packages, python-zeroconf:
 Python compatibility
 --------------------
 
-* CPython 2.7, 3.3+
-* PyPy 2.2+ (possibly 1.9-2.1 as well)
+* CPython 3.3+
 * PyPy3 2.4+
 
 Versioning
@@ -82,7 +81,6 @@ Here's an example of browsing for a service:
 
 .. code-block:: python
 
-    from six.moves import input
     from zeroconf import ServiceBrowser, Zeroconf
     
     
@@ -125,7 +123,7 @@ Changelog
 0.18.0 (not released yet)
 -------------------------
 
-* Dropped Python 2.6 support
+* Dropped Python 2 support
 
 0.17.7
 ------
