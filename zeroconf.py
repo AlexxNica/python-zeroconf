@@ -845,7 +845,7 @@ class DNSOutgoing(object):
 
     def write_byte(self, value):
         """Writes a single byte to the packet"""
-        self.pack(b'!c', int2byte(value))
+        self.pack(b'!B', value)
 
     def insert_short(self, index, value):
         """Inserts an unsigned short in a certain position in the packet"""
